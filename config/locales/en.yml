@@ -1,5 +1,5 @@
 --- 
-en-US:
+en:
   actions:
     new: New
     create: Create
@@ -32,13 +32,14 @@ en-US:
   bucket_rates_description: Bucket Rates Description
   default_amount: Default Amount
   default_weight: Default Weight
-  bucket_list_information: "
+  bucket_list_information_html: "
      In order to use the Bucket Rate calculator, you need to create intervals without gaps between them. 
      <br />When the order total does not fall within an interval, the default rate will be used.
      Order amounts larger than the largest ceiling will use the last interval rate.
-     <br />NOTE: The FLOOR value is inclusive and the CEILING value is exclusive.
+ <br />NOTE: The FLOOR value is inclusive and the CEILING value is exclusive.
     "
   click_here: Click Here
   calculator_settings: Calculator Settings
   calculator_text: Calculator
-  weight_unit: kg
+  weight_unit: lbs
+  shipping_calculator: Shipping Calculator

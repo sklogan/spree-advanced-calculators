@@ -1,4 +1,9 @@
 class Calculator::PriceBucket < Calculator::Advanced
+  def self.register
+    super
+    ShippingMethod.register_calculator(self)
+  end
+    
   def self.description
     I18n.t("price_bucket", :scope => :calculator_names)
   end
