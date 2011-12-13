@@ -3,8 +3,8 @@ class BucketRate < ActiveRecord::Base
   
   validates_presence_of :floor, :ceiling, :rate, :calculator_id
 
-  named_scope :order_by_floor, :order => "floor"
-  named_scope :for_calculator, lambda{ |calc|
+  scope :order_by_floor, :order => "floor"
+  scope :for_calculator, lambda{ |calc|
     if calc.is_a?(Calculator)
       {:conditions => {:calculator_id => calc.id}}
     else
