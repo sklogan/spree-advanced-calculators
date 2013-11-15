@@ -1,24 +1,15 @@
-class Calculator::PriceBucket < Calculator::Advanced
-  def self.register
-    super
-    ShippingMethod.register_calculator(self)
-  end
-    
-  def self.description
-    I18n.t("price_bucket", :scope => :calculator_names)
-  end
+module Spree
+  module Calculator::Shipping
+    class PriceBucket < Advanced
+      def self.description
+        "Price Rate"
+      end
 
-  def self.unit
-    I18n.t(:'number.currency.format.unit')
-  end
-
-  # as object we always get line items, as calculable we have Coupon, ShippingMethod or ShippingRate
-  def compute(order_or_line_items)
-    if order_or_line_items.is_a?(Array)
-      item_total = order_or_line_items.map(&:amount).sum
-    else
-      item_total = order_or_line_items.item_total
+      def compute(package)
+        content_items = package.contents
+        value = total(content_items)
+        get_rate(value) || self.preferred_default_amount
+      end
     end
-    get_rate(item_total) || self.preferred_default_amount
   end
 end

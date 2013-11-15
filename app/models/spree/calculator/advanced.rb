@@ -1,47 +1,16 @@
-class Calculator::Advanced < Calculator
-  has_many :bucket_rates, :foreign_key => :calculator_id, :dependent => :destroy
+class Advanced < Spree::ShippingCalculator
   preference :default_amount, :decimal, :default => 0
+  attr_accessible :preferred_default_amount
 
-  before_save :set_advanced
-
-  def self.register
-    super
-    Coupon.register_calculator(self)
-    ShippingMethod.register_calculator(self)
-    ShippingRate.register_calculator(self)
-  end
-
-  def set_advanced
-    self.advanced = true
-  end
-
-  def name
-    calculable.respond_to?(:name) ? calculable.name : calculable.to_s
-  end
-
-  def unit
-    self.class.unit
-  end
+  has_many :bucket_rates, :class_name => 'Spree::BucketRate', foreign_key:'calculator_id', dependent: :destroy
 
   def get_rate(value)
     # First try to find where price falls within price floor and ceiling
-    bucket = BucketRate.find(:first,
-      :conditions => [
-        "calculator_id = ? and floor <= ? and ceiling > ?",
-        self.id, value, value
-      ])
-
-    if bucket
-      return(bucket.rate)
-    else
-      # find largest one
-      bucket = BucketRate.find(:last, :conditions => ['calculator_id = ?', self.id], :order => "ceiling DESC")
-      # check if we've found largest one, and item_total is higher then ceiling
-      if bucket && value > bucket.ceiling
-        return(bucket.rate)
-      else
-        return(false) # if there's no rates, or we've hit a hole, let calculator use default rate.
-      end
-    end
+    bucket = self.bucket_rates.where("floor <= ? and ceiling > ?", value, value).first
+    return bucket.rate if bucket
+    # find largest one
+    bucket = self.bucket_rates.order("ceiling DESC").last
+    # check if we've found largest one, and item_total is higher then ceiling
+    bucket && value > bucket.ceiling ? bucket.rate : false
   end
 end

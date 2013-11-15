@@ -1,38 +1,67 @@
-class Admin::BucketRatesController < Admin::BaseController
-  resource_controller
-  before_filter :load_data
-  layout 'admin'
+class Spree::BucketRatesController < Spree::Admin::BaseController
+  before_filter :load_bucket_rate,  only: [:show, :edit, :update, :destroy]
 
-  update.response do |wants|
-    wants.html { redirect_to collection_url }
+  def index
+    @bucket_rates = Spree::BucketRate.all
   end
 
-  create.response do |wants|
-    wants.html { 
-      if params["create_another"]
-        rate = params["bucket_rate"].dup
-        rate[:floor] = rate.delete(:ceiling)
-        redirect_to new_object_url+"?"+({"bucket_rate" => rate}.to_param)
+  def show
+  end
+
+  def new
+    @bucket_rate = Spree::BucketRate.new
+  end
+
+  def edit
+  end
+
+  def create
+    @bucket_rate = Spree::BucketRate.new(params[:admin_bucket_rate])
+
+    respond_to do |format|
+      if @bucket_rate.save
+        if params["commit"] == "Create Another"
+          format.html {
+            @bucket_rate = Spree::BucketRate.new(calculator_id: @bucket_rate.calculator_id)
+            flash[:notice] = 'Bucket rate was successfully created.'
+            render action: "new"
+          }
+        else
+          format.html { redirect_to admin_bucket_rates_path, notice: 'Bucket rate was successfully created.' }
+        end
+        format.json { render json: admin_bucket_rates_url, status: :created, location: @bucket_rate }
       else
-        redirect_to collection_url 
+        format.html { render action: "new" }
+        format.json { render json: @bucket_rate.errors, status: :unprocessable_entity }
       end
-    }
+    end
   end
-    
+
+  def update
+    respond_to do |format|
+      if @bucket_rate.update_attributes(params[:admin_bucket_rate])
+        format.html { redirect_to admin_bucket_rates_url, notice: 'Bucket rate was successfully updated.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @bucket_rate.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def destroy
+    @bucket_rate.destroy
+
+    respond_to do |format|
+      format.html { redirect_to admin_bucket_rates_url }
+      format.json { head :no_content }
+    end
+  end
+
   private
-  def collection
-    conditions = params[:calculator_id] ? {:calculator_id => params[:calculator_id]} : {}
-    @collection ||= end_of_association_chain.all(
-      :conditions => conditions,
-      :order => 'calculator_id DESC, floor ASC'
-    )
+
+  def load_bucket_rate
+    @bucket_rate = Spree::BucketRate.find(params[:id])
   end
-	
-  def load_data
-    @available_calculators = Calculator.find(
-      :all,
-      :conditions => {:advanced => true},
-      :order => 'created_at DESC'
-    )
-  end
+
 end
